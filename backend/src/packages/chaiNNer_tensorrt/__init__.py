@@ -25,14 +25,14 @@ package = add_package(
         Dependency(
             display_name="TensorRT",
             pypi_name="tensorrt",
-            version="10.15.1.29",
+            version="10.16.1.11",
             size_estimate=int(1.2 * GB),
             auto_update=False,
         ),
         Dependency(
             display_name="CUDA Python",
             pypi_name="cuda-python",
-            version="13.1.1",
+            version="13.4.1",
             size_estimate=20 * MB,
         ),
     ],

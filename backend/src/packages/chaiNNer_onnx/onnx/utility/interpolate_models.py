@@ -4,7 +4,8 @@ from copy import deepcopy
 
 import numpy as np
 import onnx
-from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
+from collections.abc import Sequence
+
 from onnx import numpy_helper as onph
 from onnx.onnx_pb import TensorProto
 
@@ -22,8 +23,8 @@ from ..processing.upscale_image import upscale_image_node
 
 
 def perform_interp(
-    model_a_weights: RepeatedCompositeFieldContainer,
-    model_b_weights: RepeatedCompositeFieldContainer,
+    model_a_weights: Sequence[TensorProto],
+    model_b_weights: Sequence[TensorProto],
     amount: float,
 ) -> list[TensorProto]:
     amount_b = amount / 100

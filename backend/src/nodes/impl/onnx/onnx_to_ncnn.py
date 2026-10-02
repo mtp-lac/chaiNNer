@@ -3,10 +3,9 @@ from __future__ import annotations
 
 import numpy as np
 import onnx.numpy_helper as onph
-from google.protobuf.internal.containers import (
-    RepeatedCompositeFieldContainer,
-    RepeatedScalarFieldContainer,
-)
+from collections.abc import MutableSequence
+from typing import Any
+
 from onnx.onnx_pb import AttributeProto, GraphProto, ModelProto, NodeProto, TensorProto
 
 from logger import logger
@@ -83,7 +82,7 @@ class Onnx2NcnnConverter:
 
     @staticmethod
     def clear_container(
-        container: RepeatedCompositeFieldContainer | RepeatedScalarFieldContainer,
+        container: MutableSequence[Any],
     ) -> None:
         for _ in range(len(container)):
             container.pop()

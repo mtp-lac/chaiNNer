@@ -88,11 +88,19 @@ def configure_builder_config(
 
     # Set precision
     if config.precision == "fp16":
-        if builder.platform_has_fast_fp16:
-            builder_config.set_flag(trt.BuilderFlag.FP16)
-            logger.info("FP16 mode enabled")
+        if hasattr(trt.BuilderFlag, "FP16") and hasattr(
+            builder, "platform_has_fast_fp16"
+        ):
+            if builder.platform_has_fast_fp16:
+                builder_config.set_flag(trt.BuilderFlag.FP16)
+                logger.info("FP16 mode enabled")
+            else:
+                logger.warning("FP16 not supported on this platform, falling back to FP32")
         else:
-            logger.warning("FP16 not supported on this platform, falling back to FP32")
+            logger.info(
+                "FP16 precision requested but TensorRT version does not support "
+                "explicit precision flags. Engine will use model-native precision."
+            )
     elif config.precision == "bf16":
         if hasattr(trt.BuilderFlag, "BF16"):
             builder_config.set_flag(trt.BuilderFlag.BF16)
@@ -130,8 +138,12 @@ def build_engine_from_onnx(
 
     # Create builder and network
     builder = trt.Builder(trt_logger)
-    network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-    network = builder.create_network(network_flags)
+    if hasattr(trt.NetworkDefinitionCreationFlag, "EXPLICIT_BATCH"):
+        network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+        network = builder.create_network(network_flags)
+    else:
+        # TensorRT 10+ always uses explicit batch
+        network = builder.create_network()
     parser = trt.OnnxParser(network, trt_logger)
 
     # Parse ONNX model
@@ -168,11 +180,19 @@ def build_engine_from_onnx(
 
     # Set precision
     if config.precision == "fp16":
-        if builder.platform_has_fast_fp16:
-            builder_config.set_flag(trt.BuilderFlag.FP16)
-            logger.info("FP16 mode enabled")
+        if hasattr(trt.BuilderFlag, "FP16") and hasattr(
+            builder, "platform_has_fast_fp16"
+        ):
+            if builder.platform_has_fast_fp16:
+                builder_config.set_flag(trt.BuilderFlag.FP16)
+                logger.info("FP16 mode enabled")
+            else:
+                logger.warning("FP16 not supported on this platform, using FP32")
         else:
-            logger.warning("FP16 not supported on this platform, using FP32")
+            logger.info(
+                "FP16 precision requested but TensorRT version does not support "
+                "explicit precision flags. Engine will use model-native precision."
+            )
     elif config.precision == "bf16":
         if hasattr(trt.BuilderFlag, "BF16"):
             builder_config.set_flag(trt.BuilderFlag.BF16)

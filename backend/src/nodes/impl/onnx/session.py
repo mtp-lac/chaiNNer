@@ -50,6 +50,8 @@ def create_inference_session(
         providers = [cuda, cpu]
     elif execution_provider == "DmlExecutionProvider":
         providers = [dml, cpu]
+    elif execution_provider == "CPUExecutionProvider":
+        providers = [cpu]
     else:
         providers = [execution_provider, cpu]
 
