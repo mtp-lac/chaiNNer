@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
 from spandrel import ImageModelDescriptor
 
 from api import NodeContext
-from nodes.impl.onnx.load import load_onnx_model
-from nodes.impl.onnx.model import OnnxGeneric
 from nodes.impl.pytorch.convert_to_onnx_impl import (
     convert_to_onnx_impl,
     is_onnx_supported,
 )
 from nodes.properties.inputs import BoolInput, EnumInput, OnnxFpDropdown, SrModelInput
+
+if TYPE_CHECKING:
+    from nodes.impl.onnx.model import OnnxGeneric
 from nodes.properties.outputs import OnnxModelOutput, TextOutput
 
 from ...settings import get_settings
@@ -112,6 +114,15 @@ def convert_to_onnx_node(
         use_half=fp16,
         opset_version=opset.value,
     )
+
+    try:
+        from nodes.impl.onnx.load import load_onnx_model  # ruff-disable=PLC0415
+    except Exception as e:
+        raise ModuleNotFoundError(
+            "Converting to ONNX requires the ONNX dependency to be installed and "
+            "importable. Please reinstall ONNX through the dependency manager."
+        ) from e
+
     onnx_model = load_onnx_model(onnx_model_bytes)
     assert onnx_model.sub_type == "Generic"
 

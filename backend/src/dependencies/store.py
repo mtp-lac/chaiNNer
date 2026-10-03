@@ -119,9 +119,19 @@ def coerce_semver(version: str) -> tuple[int, int, int]:
     return (0, 0, 0)
 
 
+def _is_importable(package_name: str) -> bool:
+    """Attempt to import the package to verify it is not broken."""
+    try:
+        __import__(package_name)
+        return True
+    except Exception:
+        return False
+
+
 def filter_necessary_to_install(dependencies: Iterable[DependencyInfo]):
     """
     Filters out dependencies that are already installed and have the same or higher version.
+    Also reinstalls packages whose imports are broken.
     """
     dependencies_to_install: list[DependencyInfo] = []
     for dependency in dependencies:
@@ -131,7 +141,9 @@ def filter_necessary_to_install(dependencies: Iterable[DependencyInfo]):
             dep_version = coerce_semver(dependency.version)
             if installed_version < dep_version:
                 dependencies_to_install.append(dependency)
-        elif not version:
+            elif not _is_importable(dependency.package_name):
+                dependencies_to_install.append(dependency)
+        else:
             dependencies_to_install.append(dependency)
     return dependencies_to_install
 
